@@ -36,3 +36,9 @@ A fully automated `Makefile` is provided to compile all exercises efficiently.
 To compile all exercises at once, run:
 ```bash
 make
+```
+
+Then, to execute:
+```bash
+./build/my_exercise
+```
