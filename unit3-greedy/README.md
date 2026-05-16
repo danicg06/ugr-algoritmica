@@ -1,4 +1,4 @@
-# Unit 3 - Greedy Algorithms
+# Unit 3 — Greedy Algorithms
 
 This folder contains a collection of programming exercises solved using **Greedy** approaches for the Algorítmica course. 
 
