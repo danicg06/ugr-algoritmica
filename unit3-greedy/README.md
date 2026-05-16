@@ -1,35 +1,38 @@
-# Algorítmica
+# Unit 3 - Greedy Algorithms
 
-My personal solutions to selected Algorítmica problems — 2nd year Math & CS @ UGR.
+This folder contains a collection of programming exercises solved using **Greedy** approaches for the Algorítmica course. 
 
-> **Year**: 2
-> 
-> **Subject**: Algorítmica
-> 
-> **Institution**: Universidad de Granada
-> 
-> **Language**: C++
-> 
-> **Status**: 🔄 In progress
+The detailed problem statements and implementation notes can be found inside the comments at the top of each `.cpp` file.
 
-Each folder corresponds to one unit of the subject, starting from Unit 3.
+## Exercise Breakdown 📂
 
-## Progress 📈
-- [x] Unit 3 — Greedy
-- [ ] Unit 4 — Graph exploration
-- [ ] Unit 5 — Dynamic Programming
+The problems are divided into two main categories:
 
-## Structure 📁
+### 1. Classical Graph Algorithms
+These exercises focus on well-known, foundational greedy algorithms for graph theory:
+- **`Dijkstra.cpp`** — Shortest path algorithm on a directed weighted graph.
+- **`Kruskal.cpp`** — Minimum Spanning Tree (MST) discovery utilizing Disjoint Sets (Union-Find).
+- **`Prim.cpp`** — Minimum Spanning Tree (MST) discovery by growing a central tree vertex by vertex.
 
-```
-ugr-algoritmica/
-├── unit3-greedy/
-├── unit4-graph-exploration/
-└── unit5-dynamic-programming/
-```
+### 2. Custom Greedy Designs
+These problems were analyzed, modeled, and programmed from scratch based on custom optimization criteria:
+- **`fuel.cpp`** — Minimizing the number of refueling stops for a long-distance vehicle.
+- **`latency.cpp`** — Task scheduling optimization to minimize the maximum task latency against deadlines.
+- **`intervals.cpp`** — Finding the minimum number of fixed-length intervals needed to cover a set of points.
+- **`cables.cpp`** — Optimal binary merging strategy to minimize total connection/fusion costs.
 
 ---
 
-## About me 🧑‍💻
+## Compilation and Execution 🛠️
 
-2nd year Math & CS student @ UGR
+A fully automated `Makefile` is provided to compile all exercises efficiently.
+
+### Requirements
+* A C++ compiler supporting `C++11` or higher (e.g., `g++`).
+* GNU `make` utility.
+
+### Commands
+
+To compile all exercises at once, run:
+```bash
+make
