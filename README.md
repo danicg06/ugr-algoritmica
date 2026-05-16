@@ -3,9 +3,13 @@
 My personal solutions to selected Algorítmica problems — 2nd year Math & CS @ UGR.
 
 > **Year**: 2
+> 
 > **Subject**: Algorítmica
+> 
 > **Institution**: Universidad de Granada
+> 
 > **Language**: C++
+> 
 > **Status**: 🔄 In progress
 
 Each folder corresponds to one unit of the subject, starting from Unit 3.
