@@ -53,14 +53,14 @@ int firstEmptyCell(const vector<int> &solution)
 bool cellIsEmpty(int cell) { return (cell == 0); }
 
 // checks if the given number is in another cell of the same row
-bool noSameRow(int row, const vector<int> &partial_solution, int number, int block_size)
+bool noSameRow(int row, const vector<int> &partialSolution, int number, int blockSize)
 {
 	bool in = true;
-	int first_cell = block_size * row;
-	int i = first_cell;
-	while ((i <= first_cell + block_size - 1) && in)
+	int firstCell = blockSize * row;
+	int i = firstCell;
+	while ((i <= firstCell + blockSize - 1) && in)
 	{
-		if (partial_solution[i] == number)
+		if (partialSolution[i] == number)
 			in = false;
 		else
 			++i;
@@ -70,48 +70,48 @@ bool noSameRow(int row, const vector<int> &partial_solution, int number, int blo
 }
 
 // checks if the given number is in another cell of the same col
-bool noSameCol(int col, const vector<int> &partial_solution, int number, int block_size)
+bool noSameCol(int col, const vector<int> &partialSolution, int number, int blockSize)
 {
 	bool in = true;
 	int i = col;
-	while (i < partial_solution.size() && in)
+	while (i < partialSolution.size() && in)
 	{
-		if (partial_solution[i] == number)
+		if (partialSolution[i] == number)
 			in = false;
 		else
-			i += block_size;
+			i += blockSize;
 	}
 
 	return in;
 }
 
-bool noSameBlock(int row, int col, const vector<int> &partial_solution, int number, int block_size)
+bool noSameBlock(int row, int col, const vector<int> &partialSolution, int number, int blockSize)
 {
 
 	bool in = true;
 
 	// number of rows and columns in each block.
-	int block_rows = sqrt(block_size);
+	int blockRows = sqrt(blockSize);
 
 	// row and column of the block if seeing the vector as a matrix of blocks,
-	int row_block = row / block_rows;
-	int col_block = col / block_rows;
+	int rowBlock = row / blockRows;
+	int colBlock = col / blockRows;
 
 	// rows and columns to check of the corresponding block.
-	int min_row_block = row_block * block_rows;
-	int max_row_block = min_row_block + block_rows - 1;
+	int minRowBlock = rowBlock * blockRows;
+	int maxRowBlock = minRowBlock + blockRows - 1;
 
-	int min_col_block = col_block * block_rows;
-	int max_col_block = min_col_block + block_rows - 1;
+	int minColBlock = colBlock * blockRows;
+	int maxColBlock = minColBlock + blockRows - 1;
 
-	int i = min_row_block;
-	while (i <= max_row_block && in)
+	int i = minRowBlock;
+	while (i <= maxRowBlock && in)
 	{
 
-		int j = min_col_block;
-		while (j <= max_col_block && in)
+		int j = minColBlock;
+		while (j <= maxColBlock && in)
 		{
-			if (partial_solution[j + i * block_size] == number)
+			if (partialSolution[j + i * blockSize] == number)
 				in = false;
 			else
 				++j;
@@ -125,30 +125,30 @@ bool noSameBlock(int row, int col, const vector<int> &partial_solution, int numb
 
 // feasibility function.
 // checks if cell filling can lead to a solution.
-bool isFeasible(const vector<int> &partial_solution, int pos, int number, int block_size)
+bool isFeasible(const vector<int> &partialSolution, int pos, int number, int blockSize)
 {
 
 	bool feasible = true;
 
 	// row of the corresponding new filled cell.
-	int row = pos / block_size;
+	int row = pos / blockSize;
 
-	feasible = noSameRow(row, partial_solution, number, block_size);
+	feasible = noSameRow(row, partialSolution, number, blockSize);
 
 	if (feasible)
 	{
 
 		// CHECK IF THE SAME NUMBER IS NOT IN THE SAME COLUMN.
 		// col of the corresponding new filled cell.
-		int col = pos % block_size;
+		int col = pos % blockSize;
 
-		feasible = noSameCol(col, partial_solution, number, block_size);
+		feasible = noSameCol(col, partialSolution, number, blockSize);
 
 		if (feasible)
 		{
 
 			// CHECK IF THE SAME NUMBER IS NOT IN THE SAME BLOCK.
-			feasible = noSameBlock(row, col, partial_solution, number, block_size);
+			feasible = noSameBlock(row, col, partialSolution, number, blockSize);
 		}
 	}
 
@@ -157,36 +157,19 @@ bool isFeasible(const vector<int> &partial_solution, int pos, int number, int bl
 
 // BACKTRACKING ALGORITHM
 // Idea:      The Sudoku matrix will be considered as a integer vector of size n
-//            x n.
-//            This algorythm returns a bool:
-//            true -> it leads to a solution.
-//            false -> no number is feasible in an empty cell, so it does not
-//            lead to a solution.
-//            The given solution as a parameter is passed by reference, so it is
-//            modified in every recursive call if feasible.
-//
+//            x n. Also, there will a 2D-matrix that indicates the possible
+//            cells for each number (each row).
 //            The empty cells will be filled with a 0.
+//            The backtracking procedure will return a solution whenever every
+//            cell is filled.
 //
-//            At first, the first empty cell position will be found, if it is
-//            -1, then it is a solution; otherwise, we check every possible
-//            number and its feasibility.
-//
-//            If a number is feasible, it is added to the current solution and
-//            this solution is called recursively. If it leads to a solution,
-//            true is returned; else, backtrack by removing the number of the
-//            modified cell.
-//
-//            If any number is not feasible in the empty cell, then false is
-//            returned.
-//
-// Input:     ·) partial_solution, integer vector of size n x n with the
+// Input:     ·) partialSolution, integer vector of size n x n with the
 //               currently sudoku cells and its numbers.
-// Output:    ·) true if the current solution leads to a final solution;
-//            ·) false if it does not.
-bool backtracking_sudoku(vector<int> &partial_solution)
+// Output:    ·) isSolution, true if a solution has been found; false if not.
+bool backtrackingSudoku(vector<int> &partialSolution)
 {
 
-	int posFirstEmptyCell = firstEmptyCell(partial_solution);
+	int posFirstEmptyCell = firstEmptyCell(partialSolution);
 	// if the given sudoku is completed.
 	if (posFirstEmptyCell == -1)
 	{
@@ -204,34 +187,34 @@ bool backtracking_sudoku(vector<int> &partial_solution)
 
 	const int FIRST_POSSIBLE_NUMBER = 1;
 	int BLOCK_SIZE =
-		sqrt(partial_solution.size()); // as it is a square matrix.
+		sqrt(partialSolution.size()); // as it is a square matrix.
 
 	for (int number = FIRST_POSSIBLE_NUMBER; number <= BLOCK_SIZE;
 		 ++number)
 	{
 
 		// check if the new partial solution would be a feasible solution.
-		if (isFeasible(partial_solution, posFirstEmptyCell, number, BLOCK_SIZE))
+		if (isFeasible(partialSolution, posFirstEmptyCell, number, BLOCK_SIZE))
 		{
 
-			partial_solution[posFirstEmptyCell] = number;
+			partialSolution[posFirstEmptyCell] = number;
 
-			if (backtracking_sudoku(partial_solution))
+			if (backtrackingSudoku(partialSolution))
 			{
 				return true;
 			}
 
 			// else, if it does not lead to a valid solution, restore the
 			// cell and try another feasible number.
-			partial_solution[posFirstEmptyCell] = 0;
+			partialSolution[posFirstEmptyCell] = 0;
 		}
 	}
 
-	// if no feasible number is found for the empty cell, backtrack.
+	// if no feasible number is found in the empty cell, backtrack.
 	return false;
 }
 
-void print_sudoku(const vector<int> &sudoku)
+void printSudoku(const vector<int> &sudoku)
 {
 	int n = (int)sqrt(sudoku.size());
 
@@ -244,7 +227,7 @@ void print_sudoku(const vector<int> &sudoku)
 	cout << endl;
 }
 
-bool run_automated()
+bool runAutomated()
 {
 	if (isatty(fileno(stdin)))
 	{
@@ -272,7 +255,7 @@ bool run_automated()
 			cin >> sudoku[i];
 		}
 
-		bool solved = backtracking_sudoku(sudoku);
+		bool solved = backtrackingSudoku(sudoku);
 		cout << endl;
 		cout << "Sudoku " << caseIndex + 1 << ":";
 		if (!solved)
@@ -280,23 +263,23 @@ bool run_automated()
 		cout << endl;
 
 		if (solved)
-			print_sudoku(sudoku);
+			printSudoku(sudoku);
 	}
 
 	return true;
 }
 
-void run_examples()
+void runExamples()
 {
 	vector<int> sudoku1 = {1, 0, 3, 0, 0, 4, 0, 2, 2, 0, 4, 0, 0, 3, 0, 1};
-	backtracking_sudoku(sudoku1);
+	backtrackingSudoku(sudoku1);
 	cout << "Example 1:";
-	print_sudoku(sudoku1);
+	printSudoku(sudoku1);
 
 	vector<int> sudoku2 = {0, 0, 7, 4, 0, 0, 9, 0, 8, 0, 0, 2, 8, 0, 0, 0, 4, 0, 8, 3, 4, 0, 7, 0, 0, 6, 0, 6, 8, 3, 0, 5, 0, 0, 7, 4, 7, 2, 0, 0, 4, 0, 0, 3, 0, 4, 5, 0, 0, 0, 7, 0, 0, 0, 3, 0, 5, 0, 6, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 4, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0};
-	backtracking_sudoku(sudoku2);
+	backtrackingSudoku(sudoku2);
 	cout << "Example 2:";
-	print_sudoku(sudoku2);
+	printSudoku(sudoku2);
 }
 
 int main(int argc, char *argv[])
@@ -304,18 +287,18 @@ int main(int argc, char *argv[])
 	if (argc == 1)
 	{
 		cerr << "No arguments: hard-coded examples will be resolved.\n";
-		run_examples();
+		runExamples();
 		return 0;
 	}
 
 	string mode = argv[1];
 	if (mode == "--auto" || mode == "--stdin")
 	{
-		return run_automated() ? 0 : 1;
+		return runAutomated() ? 0 : 1;
 	}
 	else if (mode == "--examples")
 	{
-		run_examples();
+		runExamples();
 		return 0;
 	}
 
