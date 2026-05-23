@@ -58,10 +58,10 @@ make branch_and_bound
 
 ```
 unit4-graph-exploration/
-├── backtracking.cpp        # Sudoku solver (Backtracking)
-├── branch_and_bound.cpp    # Package minimization (Branch & Bound)
-├── Makefile                # Build automation
-├── build/                  # Compiled binaries (generated after make)
+├── src/
+    ├── backtracking.cpp      # Sudoku solver (Backtracking)
+    └── branch_and_bound.cpp  # Package minimization (Branch & Bound)
+├── Makefile                  # Build automation
 └── README.md
 ```
 ---
