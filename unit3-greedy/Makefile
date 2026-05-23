@@ -6,7 +6,7 @@ SRC_DIR = ./src
 current_directory = $(shell pwd)
 
 # Target list matching all 7 translated source files
-all: fuel latency intervals cables kruskal prim dijkstra
+all: fuel latency intervals cables Kruskal Prim Dijkstra
 	@echo "Compiled successfully."
 
 .PHONY: fuel
@@ -29,18 +29,18 @@ cables:
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(SRC_DIR)/cables.cpp -o $(BUILD_DIR)/$@
 
-.PHONY: kruskal
-kruskal:
+.PHONY: Kruskal
+Kruskal:
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(SRC_DIR)/Kruskal.cpp -o $(BUILD_DIR)/$@
 
-.PHONY: prim
-prim:
+.PHONY: Prim
+Prim:
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(SRC_DIR)/Prim.cpp -o $(BUILD_DIR)/$@
 
-.PHONY: dijkstra
-dijkstra:
+.PHONY: Dijkstra
+Dijkstra:
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(SRC_DIR)/Dijkstra.cpp -o $(BUILD_DIR)/$@
 

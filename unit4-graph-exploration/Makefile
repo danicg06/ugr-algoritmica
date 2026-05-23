@@ -1,49 +1,26 @@
 CC = g++
 BUILD_DIR = ./build
 SRC_DIR = ./src
+FLAGS =  -Wall -Wextra -O2
 
-# Get current directory cross-platform safely inside make rules if needed
-current_directory = $(shell pwd)
+all: backtracking branch_and_bound
 
-# Target list matching all 7 translated source files
-all: fuel latency intervals cables kruskal prim dijkstra
-	@echo "Compiled successfully."
+backtracking:
+	mkdir -p  $(BUILD_DIR)
+	$(CC) $(FLAGS) $(SRC_DIR)/backtracking.cpp -o $(BUILD_DIR)/backtracking
 
-.PHONY: fuel
-fuel:
+branch_and_bound:
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/fuel.cpp -o $(BUILD_DIR)/$@
+	$(CC) $(FLAGS) $(SRC_DIR)/branch_and_bound.cpp -o $(BUILD_DIR)/branch_and_bound
 
-.PHONY: latency
-latency:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/latency.cpp -o $(BUILD_DIR)/$@
+run-examples: backtracking
+	.$(BUILD_DIR)/backtracking --examples
 
-.PHONY: intervals
-intervals:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/intervals.cpp -o $(BUILD_DIR)/$@
+run-auto: backtracking
+	@echo "Use example:"
+	@echo "printf \"1 4 1 0 3 0 0 4 0 2 2 0 4 0 0 3 0 1\n\" | .$(BUILD_DIR)/backtracking --auto"
 
-.PHONY: cables
-cables:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/cables.cpp -o $(BUILD_DIR)/$@
-
-.PHONY: kruskal
-kruskal:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/Kruskal.cpp -o $(BUILD_DIR)/$@
-
-.PHONY: prim
-prim:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/Prim.cpp -o $(BUILD_DIR)/$@
-
-.PHONY: dijkstra
-dijkstra:
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/Dijkstra.cpp -o $(BUILD_DIR)/$@
-
-.PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+
+.PHONY: all run-examples run-auto clean
