@@ -19,7 +19,7 @@ Each folder corresponds to one unit of the subject, starting from Unit 3.
 - [ ] Unit 4 — Graph exploration
 - [ ] Unit 5 — Dynamic Programming
 
-## Structure 📁
+## Subject Structure 📁
 
 ```
 ugr-algoritmica/
