@@ -12,7 +12,7 @@ The problems are divided into two main categories:
 - **`backtracking.cpp`** — Sudoku resolver.
 
 ### 2. Branch&Bound Algorithm
-- **`fuel.cpp`** — Minimizing the number of packages used to pack some items of the given size.
+- **`branch_and_bound.cpp`** — Minimizing the number of packages used to pack some items of the given size.
 
 ---
 
@@ -30,12 +30,41 @@ To compile all exercises at once, run:
 ```bash
 make
 ```
-or, if want to compile a single exercise:
-- Backtracking:
+or to compile a single exercise:
 ```bash
+# Backtracking
 make backtracking
-```
-- Branch&Bound:
-```bash
+
+# Branch&Bound:
 make branch&bound
 ```
+
+### Execution
+```bash
+./build/backtracking [--examples] | --auto
+
+./build/branch_and_bound [--examples] | --auto
+```
+
+
+| Flag | Description |
+|------|-------------|
+| `--examples` | Runs hard-coded examples. **Default** if no flag is provided. |
+| `--auto` | Interactive mode — lets you introduce your own problem input. |
+
+---
+
+## Project Structure 📁
+
+```
+unit4-graph-exploration/
+├── backtracking.cpp        # Sudoku solver (Backtracking)
+├── branch_and_bound.cpp    # Package minimization (Branch & Bound)
+├── Makefile                # Build automation
+├── build/                  # Compiled binaries (generated after make)
+└── README.md
+```
+---
+AI Assistance Disclosure 🤖
+Parts of main functions and the Makefile were partially generated with the assistance of GitHub Copilot (VS Code extension).
+All AI-generated code was reviewed, tested, and manually adjusted by the author to ensure correctness and alignment with the course requirements.
