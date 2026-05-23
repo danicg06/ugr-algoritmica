@@ -2,7 +2,7 @@
 
 This folder contains a collection of programming exercises of grapghs solved using **Backtracking** and **Branch&Bound** approaches for the Algorítmica course. 
 
-The detailed problem statements and implementation notes can be found inside the comments at the top of each `.cpp` file.
+> The detailed problem statements and implementation notes can be found inside the comments at the top of each `.cpp` file.
 
 ## Exercise Breakdown 📂
 
