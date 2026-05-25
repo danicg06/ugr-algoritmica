@@ -1,4 +1,4 @@
-# Unit 4 - Graph Exploration
+# Unit 4 - Graph Exploration 🧭
 
 This folder contains a collection of programming exercises of grapghs solved using **Backtracking** and **Branch&Bound** approaches for the Algorítmica course. 
 
