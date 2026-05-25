@@ -11,194 +11,311 @@
 
 using namespace std;
 
-// adds the corresponding selected item's size to the current box's filled
-// capacity.
-// updates the number of packages used and the capacity filled of the current.
-void updatePackagesNumSum(int &packagedCapFilled, int &nPackagesUsed,
-                          int capacity, int selectedItem)
+// nodes structure
+struct node
 {
-    if (packagedCapFilled + selectedItem < capacity)
-        // add the selected item's size.
-        packagedCapFilled += selectedItem;
-    else
+    int selectedItem;          // selected item from the alive nodes list
+    vector<int> boxesCapacity; // each of the opened boxes' capacity
+    vector<int> notBoxedItems; // items not selected yet.
+    int capacity;              // initial capacity of each package.
+    int boxIndex = 0;          // box in which the selected item has been packed.
+
+    int index = 0;      // index of the current node
+    int prevIndex = -1; // index of the previous node
+};
+
+/**
+ * @brief Updates the capacity of the opened boxes and opens a new one if needed,
+ *        while saving the box index where the selected item has been introduced.
+ *        It also removes the selected item from the notUsedItems vector.
+ *
+ * @param n node to update.
+ * @param selectedItem selected item form the alive nodes list.
+ */
+void updateBoxesItems(node &n)
+{
+    // updates the notUsedItems vector.
+    n.notBoxedItems.erase(find(n.notBoxedItems.begin(), n.notBoxedItems.end(), n.selectedItem));
+
+    int i = 0;
+
+    // iterates over every box and checks if the selected item fits in it.
+    while (i < n.boxesCapacity.size())
     {
-        packagedCapFilled = selectedItem;
-        nPackagesUsed++;
+
+        // if the selected item fits in the box.
+        if (n.selectedItem <= n.boxesCapacity[i])
+        {
+            n.boxesCapacity.at(i) -= n.selectedItem;
+            n.boxIndex = i;
+            return; // not executing the following code lines.
+        }
+        ++i;
     }
 
-    // else, not update.
+    // if this code is executed, then the selected item has not been boxed or
+    // no package had been opened yet.
+    // -> opens a new box and introduces the selected item.
+    n.boxesCapacity.push_back(n.capacity - n.selectedItem);
+    n.boxIndex = i;
 }
 
-// BRANCH&BOUND
-// Idea:      The idea is to found the exact order in which every item is placed
-//            a box, minimizing the number of boxes packed without exceeding its
-//            capacity.
-//
-//            A solution will be found whenever every item is packaged.
-//
-//            The selection strategy will be to pick the biggest element left,
-//            as it is the most difficult to fit in a package.
-//
-//            Every item will have a respective lower and upper bound, so, if
-//            the lower bound of the selected item is equal or bigger than the
-//            global upper bound, then the picked one does not lead to the
-//            minimizing solution and it is pruned of the hypothetical tree.
-//
-//            When the selected item's bounds fit in the previous bounds, every
-//            of its hypothetical childs are checked if they are a final
-//            solution:
-//            if it is a solution, it is compared with the best found solution.
-//            if it is not a final solution and its bounds fit, it will be taken
-//            into account in the future as it can lead to a final solution;
-//            then, the global upper bound is updated as the minimum of the
-//            previous value and the item's upper bound.
-//
-//            If a new final solution is better than the best current solution,
-//            it is considered as the new current best solution and the upper
-//            bound is calculated as explained before. Otherwise, it is
-//            backtracked.
-//
-//            Notice that, in this problem, a item's child is any of the other
-//            items because every item is pickable whenever a item is selected.
-//
-//            As the main aim is to minimize, the initial upper boind will be
-//            the number of items to package (a greedy solution would be more
-//            efficient).
-//
-//            The items' lower bound will always be the number of packages
-//            used at the moment.
-//
-//
-// Input:     ·) items, integer vector of each item's size.
-//            ·) bestSolution, current best solution.
-//            ·) bestNPackagesUsed, number of packages used of the best solution.
-//            ·) capacity, packages' capacity.
-void branch_and_bound_bin(const vector<int> &items, vector<int> &bestSolution,
-                          int bestNPackagesUsed, int capacity)
+/**
+ * @brief Counts the number of boxes fully packaged.
+ *
+ * @param boxesCapacity vector of integers representing each box's capacity.
+ * @param capacity the initial capacity of the box.
+ * @return int
+ */
+int filledBoxes(const vector<int> &boxesCapacity)
 {
-    // sorted items, so it is more efficient the selection strategy.
+
+    int nFilledBoxes = 0;
+    for (auto it = boxesCapacity.begin(); it != boxesCapacity.end(); ++it)
+    {
+        if (*it == 0)
+            ++nFilledBoxes;
+    }
+
+    return nFilledBoxes;
+}
+
+/**
+ * @brief Calculates the lower bound of the given node:
+ *        closed packages
+ *        + (not used items total size + capacity left in the boxes)/capacity
+ *
+ * @param n proper node from which obtain the lower bound.
+ * @return int
+ */
+int CI(const node &n)
+{
+
+    // number of packages closed.
+    int closedPackages = filledBoxes(n.boxesCapacity);
+
+    // sumatory of the not packaged items' size and the capacity not filled from
+    // the opened boxes.
+    int sum = 0;
+
+    for (auto it = n.boxesCapacity.begin(); it != n.boxesCapacity.end(); ++it)
+    {
+        // if the box is not totally filled.
+        if (*it != 0)
+        {
+            sum += *it;
+        }
+    }
+
+    for (auto it = n.notBoxedItems.begin(); it != n.notBoxedItems.end(); ++it)
+    {
+        sum += *it;
+    }
+
+    return (closedPackages + sum / n.capacity);
+}
+
+/**
+ * @brief Calculates the upper bound of the given node:
+ *        closed packages + number of not used items.
+ *
+ * @param n proper node from which obtain the upper bound.
+ * @return int
+ */
+int CS(const node &n)
+{
+    return (filledBoxes(n.boxesCapacity) + n.notBoxedItems.size());
+}
+
+/**
+ * @brief Selection function for the next node by the Least Cost strategy.
+ *        Picks the most promising node (the smallest CI) from the alive nodes
+ *        list and REMOVES the selected item from the given vector.
+ *
+ * @param aliveNodes vector of the nodes from which the function will select the
+ *                   next node.
+ * @return node
+ */
+node select(vector<node> &aliveNodes)
+{
+
+    int bestNodeIndex = 0;
+
+    for (int i = 0; i < aliveNodes.size(); ++i)
+    {
+        if (CI(aliveNodes[i]) < CI(aliveNodes[bestNodeIndex]))
+            bestNodeIndex = i;
+    }
+
+    node selected = aliveNodes[bestNodeIndex]; // selected node
+
+    aliveNodes.erase(aliveNodes.begin() + bestNodeIndex); // erase the selected node
+
+    return selected;
+}
+
+/**
+ * @brief BRANCH&BOUND
+ * Idea:      The idea is to found the exact order in which every item is placed
+ *            in a box, minimizing the number of boxes packed without exceeding
+ *            their capacity.
+ *
+ *            A solution will be found whenever every item is packaged.
+ *
+ *            The selection strategy will be to pick the biggest element that
+ *            has not been already selected.
+ *
+ *            Every item will have a respective lower and upper bound, so, if
+ *            the lower bound of the selected item is equal or bigger than the
+ *            global upper bound, then the picked item does not lead to the
+ *            minimizing solution and it is pruned of the hypothetical tree.
+ *
+ *            When the selected item's bounds fit in the global bounds, every
+ *            of its hypothetical childs (boxes' capacities with the packaging
+ *            of each of the not boxed items) are checked if they are a final
+ *            solution:
+ *            if it is a solution, it is compared with the best current solution.
+ *            if it is not a final solution and its bounds fit, it will be taken
+ *            into account in the future as it can lead to a final solution;
+ *            then, the global upper bound is updated as the minimum of the
+ *            its value and the item's upper bound.
+ *
+ *            If a new final solution is better than the best current solution,
+ *            it is considered as the new current best solution and the upper
+ *            bound is calculated as explained before. Otherwise, it is
+ *            backtracked.
+ *
+ *            As the main aim is to minimize, the initial upper boind will be
+ *            the number of items to package (a greedy solution would be more
+ *            efficient).
+ *
+ *            The items' lower bound will be calculated as:
+ *            number of boxes +
+ *            (lasting items' size + open boxes 'capacity) / initial capacity
+ *
+ * @param items vector of the given items to be boxed.
+ * @param bestSolution last node of the best current solution.
+ * @param capacity initial capacity of the packages.
+ * @return node
+ */
+node branch_and_bound_bin(const vector<int> &items, int capacity, vector<node> &nodeHistory)
+{
+    // ensure that the node history list is empty.
+    nodeHistory.clear();
+
+    // indexes of the current and parent nodes.
+    int currentIndex = 0;
+
+    // initialize the best solution with the worst possible solution.
+    node bestSolution;
+    bestSolution.boxesCapacity.assign(items.size(), 0);
+
+    // sort the given items, so it is easier to select the next item (the
+    // biggest in the aliveNodes vector)
     vector<int> orderedItems = items;
-    sort(orderedItems.begin(), orderedItems.end(), greater<int>());
+    sort(orderedItems.begin(), orderedItems.end());
 
-    // current upper bound.
-    int c = items.size();
+    // the root will be the biggest item.
+    node root = {orderedItems.back(), {}, items, capacity};
+    // preset indexes: 0 and -1.
+    updateBoxesItems(root);
+    nodeHistory.push_back(root);
 
-    // current lower bound.
-    int nPackagesUsed = 1;
+    int C = CS(root);
 
-    // current alive nodes.
-    vector<int> aliveNodes;
-    aliveNodes.push_back(orderedItems.at(0));
+    // vector of pickable nodes.
+    vector<node> aliveNodes;
+    aliveNodes.push_back(root);
 
-    // current items used, possible future solution.
-    vector<int> solution;
+    // current solution.
+    vector<node> solution;
 
-    // items not used.
-    vector<int> notUsedItems = orderedItems;
-
-    // sum of the items size in the actual box. Set to 0 whenever a box is
-    // filled or the next item does not fit in it, going for the next package.
-    int packagedCapFilled = 0;
+    // selected node in each iteration of the while loop.
+    node selectedNode;
 
     while (!aliveNodes.empty())
     {
-        // select next item.
-        int selectedItem = aliveNodes.at(0);
 
-        // delete the selected item from the alive nodes.
-        aliveNodes.erase(aliveNodes.begin());
+        selectedNode = select(aliveNodes); // selects and removes the next node
+                                           // from the alive nodes list
 
-        // if the selected item does not fit the bounds, restore the modified
-        // values.
-        int prevCapFilled = packagedCapFilled;
-        int prevNPackagesUsed = nPackagesUsed;
+        // the index of the selected, the future parent index for the children.
+        int parentNodeIndex = selectedNode.index;
 
-        // update the number of packages used and the package sum.
-        updatePackagesNumSum(packagedCapFilled, nPackagesUsed, capacity, selectedItem);
-
-        // check if the item's bound fit.
-        if (nPackagesUsed < c)
+        // check if the item's bounds fit.
+        if (CI(selectedNode) <= C)
         {
-            solution.push_back(selectedItem);
-            notUsedItems.erase(notUsedItems.begin());
 
             // for each child of the selected item (given items not in solution).
-            for (auto it = notUsedItems.begin(); it != notUsedItems.end(); ++it)
+            for (auto it = selectedNode.notBoxedItems.begin();
+                 it != selectedNode.notBoxedItems.end(); ++it)
             {
+                node childNode = {{*it}, {selectedNode.boxesCapacity}, {selectedNode.notBoxedItems}, capacity};
 
-                // if the solution is not the best or the bounds do not fit,
-                // restore the modified values.
-                prevCapFilled = packagedCapFilled;
-                prevNPackagesUsed = nPackagesUsed;
+                // set the corresponding indexes.
+                childNode.index = ++currentIndex;
+                childNode.prevIndex = parentNodeIndex;
 
-                updatePackagesNumSum(packagedCapFilled, nPackagesUsed, capacity, *it);
+                // update the boxes capacity and the not selected items.
+                updateBoxesItems(childNode);
 
-                // if only this child left, it is a final solution.
-                if (aliveNodes.size() == 1)
+                // add to the node history list.
+                nodeHistory.push_back(childNode);
+
+                // if there is no item left to pack, it is a solution.
+                if (childNode.notBoxedItems.size() == 0)
                 {
 
                     // check if the solution is the best.
-                    if (nPackagesUsed < bestNPackagesUsed)
+                    if (childNode.boxesCapacity.size() < bestSolution.boxesCapacity.size())
                     {
-                        solution.push_back(*it);
-                        notUsedItems.erase(it);
-
-                        // new best solution.
-                        bestSolution = solution;
-                        bestNPackagesUsed = nPackagesUsed;
-
-                        // update upper bound.
-                        c = min(c, nPackagesUsed);
-                    }
-                    else // it is not the best solution, backtrack.
-                    {
-                        packagedCapFilled = prevCapFilled;
-                        nPackagesUsed = prevNPackagesUsed;
+                        bestSolution = childNode;
                     }
                 }
                 else // if it not a final solution.
                 {
 
-                    if (nPackagesUsed < c)
+                    if (CI(childNode) < C)
                     {
+                        // consider this node for a possible future solution.
+                        aliveNodes.push_back(childNode);
 
-                        // the current child is an alive node.
-                        // Insert in the correct position to maintain decreasing order
-                        aliveNodes.insert(aliveNodes.begin(), *it);
+                        // update upper global bound.
+                        C = min(C, CS(childNode));
 
-                        // update upper bound.
-                        int CS = nPackagesUsed + notUsedItems.size();
-                        c = min(c, CS);
-
-                        solution.push_back(*it);
-                        notUsedItems.erase(it);
-                    }
-                    else
-                    {
-                        packagedCapFilled = prevCapFilled;
-                        nPackagesUsed = prevNPackagesUsed;
-                    }
+                    } // else, prune the child node.
                 }
             }
-        }
-        else // if its bounds do not fit, backtrack.
-        {
-            packagedCapFilled = prevCapFilled;
-            nPackagesUsed = prevNPackagesUsed;
-        }
+        } // otherwise, prune the selected node.
     }
+
+    return bestSolution;
 }
 
-void printBinPacking(const vector<int> &solution)
+void printBinPacking(const node &n, const vector<node> &nodeHistory)
 {
-    cout << "Items order: ";
-    for (int i = 0; i < solution.size(); ++i)
+    int index = n.index;
+    vector<node> path;
+
+    // Recollect the nodes path to the solution
+    while (index >= 0 && index < nodeHistory.size())
     {
-        cout << solution[i];
-        if (i < solution.size() - 1)
-            cout << " -> ";
+        path.push_back(nodeHistory[index]);
+        index = nodeHistory[index].prevIndex;
     }
-    cout << endl;
+
+    cout << "--- Items packaging ---" << endl;
+    for (int i = path.size() - 1; i >= 0; --i)
+    {
+        node actualNode = path[i];
+        cout << "Item size: " << actualNode.selectedItem;
+
+        cout << " -> Box: " << actualNode.boxIndex + 1
+             << " (Remaining capacity in the box: "
+             << actualNode.boxesCapacity[actualNode.boxIndex] << ")";
+        cout << endl;
+    }
+    cout << "----------------------------------------------" << endl;
 }
 
 bool runAutomated()
@@ -231,10 +348,9 @@ bool runAutomated()
         int capacity;
         cin >> capacity;
 
-        vector<int> bestSolution;
-        int bestNPackagesUsed = n;
+        vector<node> nodeHistory;
 
-        branch_and_bound_bin(items, bestSolution, bestNPackagesUsed, capacity);
+        node bestSolution = branch_and_bound_bin(items, capacity, nodeHistory);
 
         cout << endl;
         cout << "Case " << caseIndex + 1 << ":" << endl;
@@ -247,10 +363,9 @@ bool runAutomated()
         }
         cout << endl;
         cout << "Capacity: " << capacity << endl;
-        cout << "Packages used: " << bestNPackagesUsed << endl;
+        cout << "Packages used: " << bestSolution.boxesCapacity.size() << endl;
 
-        if (!bestSolution.empty())
-            printBinPacking(bestSolution);
+        // printBinPacking(bestSolution);
     }
 
     return true;
@@ -260,30 +375,26 @@ void runExamples()
 {
     cout << "Example 1: Simple bin packing problem" << endl;
     vector<int> items1 = {6, 5, 4, 3, 3, 2};
-    vector<int> bestSolution1;
-    int bestNPackagesUsed1 = items1.size();
     int capacity1 = 10;
+    vector<node> nodeHistory1;
 
-    branch_and_bound_bin(items1, bestSolution1, bestNPackagesUsed1, capacity1);
+    node bestSolution1 = branch_and_bound_bin(items1, capacity1, nodeHistory1);
     cout << "Items: 6 5 4 3 3 2" << endl;
     cout << "Capacity: " << capacity1 << endl;
-    cout << "Packages used: " << bestNPackagesUsed1 << endl;
-    if (!bestSolution1.empty())
-        printBinPacking(bestSolution1);
+    cout << "Packages used: " << bestSolution1.boxesCapacity.size() << endl;
+    printBinPacking(bestSolution1, nodeHistory1);
 
     cout << endl
          << "Example 2: Another bin packing problem" << endl;
     vector<int> items2 = {7, 5, 9, 3, 4, 8, 2};
-    vector<int> bestSolution2;
-    int bestNPackagesUsed2 = items2.size();
     int capacity2 = 15;
+    vector<node> nodeHistory2;
 
-    branch_and_bound_bin(items2, bestSolution2, bestNPackagesUsed2, capacity2);
+    node bestSolution2 = branch_and_bound_bin(items2, capacity2, nodeHistory2);
     cout << "Items: 7 5 9 3 4 8 2" << endl;
     cout << "Capacity: " << capacity2 << endl;
-    cout << "Packages used: " << bestNPackagesUsed2 << endl;
-    if (!bestSolution2.empty())
-        printBinPacking(bestSolution2);
+    cout << "Packages used: " << bestSolution2.boxesCapacity.size() << endl;
+    printBinPacking(bestSolution2, nodeHistory2);
 }
 
 int main(int argc, char *argv[])
