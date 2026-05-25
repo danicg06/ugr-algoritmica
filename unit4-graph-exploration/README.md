@@ -66,5 +66,5 @@ unit4-graph-exploration/
 ```
 ---
 ## AI Assistance Disclosure 🤖
-Parts of main functions and the Makefile were partially generated with the assistance of GitHub Copilot (VS Code extension).
-All AI-generated code was reviewed, tested, and manually adjusted by the author to ensure correctness and alignment with the course requirements.
+The 'main' function and the Makefile were partially generated with the assistance of GitHub Copilot (VS Code extension).
+All AI-generated code was reviewed, tested, and manually adjusted by the author to ensure correctness and alignment with the problem requirements.
