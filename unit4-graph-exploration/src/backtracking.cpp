@@ -28,16 +28,18 @@ using namespace std;
   row, column, and block.
 
   Empty cells are filled with a 0.
+
+  Notice that the sudoku must be of size nxn, where n is an integer.
 */
 
-// Searching loop for the position of the first empty cell.
+// Searching loop for the position of the first empty cell from the given index.
 // If there is none, it returns -1.
-int firstEmptyCell(const vector<int> &solution)
+int firstEmptyCell(const vector<int> &solution, int index)
 {
 
 	int pos = -1;
 
-	for (int i = 0; i < solution.size(); ++i)
+	for (int i = index; i < solution.size(); ++i)
 	{
 		if (solution[i] == 0)
 		{
@@ -45,6 +47,25 @@ int firstEmptyCell(const vector<int> &solution)
 			break;
 		}
 	}
+
+	return pos;
+}
+
+// Iterates over every sudoku cell in order to find the empty cells.
+// Returns an integer vector of the position of these cells in the sudoku vector.
+vector<int> posEmptyCells(const vector<int> &initialSudoku)
+{
+
+	vector<int> pos;
+
+	for (int i = initialSudoku.size() - 1; i >= 0; --i)
+	{
+		if (initialSudoku[i] == 0)
+			pos.push_back(i);
+	}
+
+	if (pos.empty())
+		pos = {-1};
 
 	return pos;
 }
@@ -91,18 +112,20 @@ bool noSameBlock(int row, int col, const vector<int> &partialSolution, int numbe
 	bool in = true;
 
 	// number of rows and columns in each block.
-	int blockRows = sqrt(blockSize);
+	float blockDivision = sqrt(blockSize);
+	int blockRows = floor(blockDivision);
+	int blockCols = ceil(blockDivision);
 
-	// row and column of the block if seeing the vector as a matrix of blocks,
+	// row and column of the block if seeing the vector as a matrix of blocks.
 	int rowBlock = row / blockRows;
-	int colBlock = col / blockRows;
+	int colBlock = col / blockCols;
 
 	// rows and columns to check of the corresponding block.
 	int minRowBlock = rowBlock * blockRows;
 	int maxRowBlock = minRowBlock + blockRows - 1;
 
-	int minColBlock = colBlock * blockRows;
-	int maxColBlock = minColBlock + blockRows - 1;
+	int minColBlock = colBlock * blockCols;
+	int maxColBlock = minColBlock + blockCols - 1;
 
 	int i = minRowBlock;
 	while (i <= maxRowBlock && in)
@@ -166,15 +189,15 @@ bool isFeasible(const vector<int> &partialSolution, int pos, int number, int blo
 // Input:     ·) partialSolution, integer vector of size n x n with the
 //               currently sudoku cells and its numbers.
 // Output:    ·) isSolution, true if a solution has been found; false if not.
-bool backtrackingSudoku(vector<int> &partialSolution)
+bool backtrackingSudoku(vector<int> &partialSolution, vector<int> &posEmptyCells)
 {
 
-	int posFirstEmptyCell = firstEmptyCell(partialSolution);
 	// if the given sudoku is completed.
-	if (posFirstEmptyCell == -1)
+	if (posEmptyCells.empty())
 	{
 		return true;
 	}
+	int posFirstEmptyCell = posEmptyCells.back();
 
 	// else, the sudoku is not completed yet.
 	// the procedure is the following:
@@ -198,8 +221,9 @@ bool backtrackingSudoku(vector<int> &partialSolution)
 		{
 
 			partialSolution[posFirstEmptyCell] = number;
+			posEmptyCells.pop_back();
 
-			if (backtrackingSudoku(partialSolution))
+			if (backtrackingSudoku(partialSolution, posEmptyCells))
 			{
 				return true;
 			}
@@ -207,6 +231,7 @@ bool backtrackingSudoku(vector<int> &partialSolution)
 			// else, if it does not lead to a valid solution, restore the
 			// cell and try another feasible number.
 			partialSolution[posFirstEmptyCell] = 0;
+			posEmptyCells.push_back(posFirstEmptyCell);
 		}
 	}
 
@@ -214,17 +239,40 @@ bool backtrackingSudoku(vector<int> &partialSolution)
 	return false;
 }
 
+vector<int> solveSudoku(const vector<int> &initialSudoku)
+{
+
+	// vector of the position of the empty cells in the sudoku vector.
+	vector<int> emptyCells = posEmptyCells(initialSudoku);
+
+	// copy of the initial sudoku
+	vector<int> sudoku = initialSudoku;
+
+	if (backtrackingSudoku(sudoku, emptyCells))
+		return sudoku;
+	else
+		return {-1};
+}
+
 void printSudoku(const vector<int> &sudoku)
 {
-	int n = (int)sqrt(sudoku.size());
-
-	for (int i = 0; i < sudoku.size(); ++i)
+	if (sudoku == (vector<int>){-1})
 	{
-		if (i % n == 0)
-			cout << endl;
-		cout << sudoku[i] << " ";
+		cout << " NO SOLUTION FOUND";
+		cout << endl;
 	}
-	cout << endl;
+	else
+	{
+		int n = (int)sqrt(sudoku.size());
+
+		for (int i = 0; i < sudoku.size(); ++i)
+		{
+			if (i % n == 0)
+				cout << endl;
+			cout << sudoku[i] << " ";
+		}
+		cout << endl;
+	}
 }
 
 bool runAutomated()
@@ -255,39 +303,45 @@ bool runAutomated()
 			cin >> sudoku[i];
 		}
 
-		bool solved = backtrackingSudoku(sudoku);
+		vector<int> solvedSudoku = solveSudoku(sudoku);
 		cout << endl;
 		cout << "Sudoku " << caseIndex + 1 << ":";
-		if (!solved)
-			cout << " NO SOLUTION FOUND";
-		cout << endl;
-
-		if (solved)
-			printSudoku(sudoku);
+		printSudoku(solvedSudoku);
 	}
 
 	return true;
 }
 
-void runExamples()
+void runExamples(int nExamples)
 {
-	vector<int> sudoku1 = {1, 0, 3, 0, 0, 4, 0, 2, 2, 0, 4, 0, 0, 3, 0, 1};
-	backtrackingSudoku(sudoku1);
-	cout << "Example 1:";
-	printSudoku(sudoku1);
 
-	vector<int> sudoku2 = {0, 0, 7, 4, 0, 0, 9, 0, 8, 0, 0, 2, 8, 0, 0, 0, 4, 0, 8, 3, 4, 0, 7, 0, 0, 6, 0, 6, 8, 3, 0, 5, 0, 0, 7, 4, 7, 2, 0, 0, 4, 0, 0, 3, 0, 4, 5, 0, 0, 0, 7, 0, 0, 0, 3, 0, 5, 0, 6, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 4, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0};
-	backtrackingSudoku(sudoku2);
-	cout << "Example 2:";
-	printSudoku(sudoku2);
+	const vector<vector<int>> EXAMPLES = {
+		{1, 0, 3, 0, 0, 4, 0, 2, 2, 0, 4, 0, 0, 3, 0, 1},
+		{0, 0, 7, 4, 0, 0, 9, 0, 8, 0, 0, 2, 8, 0, 0, 0, 4, 0, 8, 3, 4, 0, 7, 0, 0, 6, 0, 6, 8, 3, 0, 5, 0, 0, 7, 4, 7, 2, 0, 0, 4, 0, 0, 3, 0, 4, 5, 0, 0, 0, 7, 0, 0, 0, 3, 0, 5, 0, 6, 0, 0, 2, 0, 0, 0, 6, 0, 0, 0, 4, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0},
+		{0, 0, 3, 0, 5, 0,
+		 5, 0, 0, 3, 0, 0,
+		 0, 3, 0, 0, 0, 5,
+		 2, 0, 0, 0, 3, 0,
+		 0, 0, 5, 0, 0, 2,
+		 0, 6, 0, 5, 0, 0}};
+
+	for (int i = 0; i < nExamples; ++i)
+	{
+		cout << "Example " << i + 1;
+		printSudoku(solveSudoku(EXAMPLES[i]));
+
+		cout << endl;
+	}
 }
 
 int main(int argc, char *argv[])
 {
+	const int N_EXAMPLES = 3;
+
 	if (argc == 1)
 	{
 		cerr << "No arguments: hard-coded examples will be resolved.\n";
-		runExamples();
+		runExamples(N_EXAMPLES);
 		return 0;
 	}
 
@@ -298,7 +352,7 @@ int main(int argc, char *argv[])
 	}
 	else if (mode == "--examples")
 	{
-		runExamples();
+		runExamples(N_EXAMPLES);
 		return 0;
 	}
 
