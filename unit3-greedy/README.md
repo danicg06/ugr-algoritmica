@@ -58,7 +58,7 @@ make intervals
 make cables
 ```
 
-### Execution
+## Execution
 
 ```bash
 ./build/<exercise_name>
