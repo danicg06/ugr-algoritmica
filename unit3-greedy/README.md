@@ -38,7 +38,7 @@ A fully automated `Makefile` is provided to compile all exercises efficiently.
 - A C++ compiler supporting **C++11** or higher (e.g., `g++`)
 - GNU **`make`** utility
 
-### Commands
+## Build & Run
 
 Compile all exercises at once:
 
