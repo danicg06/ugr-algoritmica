@@ -16,7 +16,7 @@ The problems are divided into two main categories:
 
 ---
 
-## Compilation and Execution 🛠️
+## Build & Run 🛠️
 
 A fully automated `Makefile` is provided to compile all exercises efficiently.
 
@@ -24,7 +24,7 @@ A fully automated `Makefile` is provided to compile all exercises efficiently.
 * A C++ compiler supporting `C++11` or higher (e.g., `g++`).
 * GNU `make` utility.
 
-## Build & Run
+### Build
 
 To compile all exercises at once, run:
 ```bash
@@ -39,7 +39,7 @@ make backtracking
 make branch_and_bound
 ```
 
-## Execution
+### Execution
 ```bash
 ./build/backtracking [--examples] | --auto
 
