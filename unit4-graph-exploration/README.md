@@ -39,7 +39,7 @@ make backtracking
 make branch_and_bound
 ```
 
-### Execution
+## Execution
 ```bash
 ./build/backtracking [--examples] | --auto
 
