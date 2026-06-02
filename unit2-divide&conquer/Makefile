@@ -6,7 +6,7 @@ SRC_DIR = ./src
 current_directory = $(shell pwd)
 
 # Target list matching all 7 translated source files
-all: binomialCoefficient maxSubarray consecutivePlots repeatedNums
+all: binomialCoefficient maxSubarray consecutivePlots numOccurrences
 	@echo "Compiled successfully."
 
 .PHONY: binomialCoefficient
@@ -24,10 +24,10 @@ consecutivePlots:
 	mkdir -p $(BUILD_DIR)
 	$(CC) $(SRC_DIR)/consecutivePlots.cpp -o $(BUILD_DIR)/$@
 
-.PHONY: repeatedNums
-repeatedNums:
+.PHONY: numOccurrences
+numOccurrences:
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(SRC_DIR)/repeatedNums.cpp -o $(BUILD_DIR)/$@
+	$(CC) $(SRC_DIR)/numOccurrences.cpp -o $(BUILD_DIR)/$@
 
 .PHONY: clean
 clean:

@@ -29,7 +29,7 @@ Or compile a single exercise:
 make binomialCoefficient
 make consecutivePlots
 make maxSubarray
-make repeatedNums
+make numOccurrences
 ```
 
 ### Run
@@ -42,12 +42,12 @@ make repeatedNums
 ## Project Structure 📁
 
 ```
-unit3-greedy-algorithms/
+unit2-divide&conquer/
 ├── src/
 │   ├── binomialCoefficient.cpp    # Binomial coefficient of the form n = C(k,2)
 │   ├── consecutivePlots.cpp       # Maximum number of consecutive plots
 │   ├── maxSubarray.cpp            # Maximum sumatory of subarray elements
-│   └── repeatedNums.cpp           # Repeated numbers counter
+│   └── numOccurrences.cpp          # Number occurrences counter
 ├── Makefile            # Build automation
 └── README.md
 ```
