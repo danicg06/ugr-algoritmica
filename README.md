@@ -15,6 +15,7 @@ My personal solutions to selected Algorítmica problems — 2nd year Math & CS @
 Each folder corresponds to one unit of the subject, starting from Unit 3.
 
 ## Progress 📈
+- [ ] Unit 2 - Divide & Conquer
 - [x] Unit 3 — Greedy
 - [ ] Unit 4 — Graph exploration
 - [ ] Unit 5 — Dynamic Programming
