@@ -47,7 +47,7 @@ unit2-divide&conquer/
 │   ├── binomialCoefficient.cpp    # Binomial coefficient of the form n = C(k,2)
 │   ├── consecutivePlots.cpp       # Maximum number of consecutive plots
 │   ├── maxSubarray.cpp            # Maximum sumatory of subarray elements
-│   └── numOccurrences.cpp          # Number occurrences counter
-├── Makefile            # Build automation
+│   └── numOccurrences.cpp         # Number occurrences counter
+├── Makefile                       # Build automation
 └── README.md
 ```
